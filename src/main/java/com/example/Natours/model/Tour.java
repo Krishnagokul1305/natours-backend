@@ -39,7 +39,6 @@ public class Tour {
     private Location startLocation;
     private List<Location> locations;
 
-    @DBRef
     private List<String> guides;
 
     @Data
@@ -49,6 +48,5 @@ public class Tour {
         private String address;
         private String description;
         private Integer day;
-
     }
 }

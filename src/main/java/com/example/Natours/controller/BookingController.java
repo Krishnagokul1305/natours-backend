@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/bookings")
@@ -32,11 +33,44 @@ public class BookingController {
         return ResponseEntity.ok(new ApiResponse<>("success", booking));
     }
 
+    @GetMapping("/tour/{tourId}")
+    public ResponseEntity<ApiResponse<List<Booking>>> getBookingsByTour(@PathVariable String tourId) {
+        List<Booking> bookings = bookingService.getBookingsByTour(tourId);
+        return ResponseEntity.ok(new ApiResponse<>("success", bookings));
+    }
+
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<ApiResponse<List<Booking>>> getBookingsByUserId(@PathVariable String userId) {
+        List<Booking> bookings = bookingService.getBookingsByUser(userId);
+        return ResponseEntity.ok(new ApiResponse<>("success", bookings));
+    }
+
+    @GetMapping("/tour/{tourId}/user/{userId}")
+    public ResponseEntity<ApiResponse<Booking>> getBookingsByTour(@PathVariable String tourId, @PathVariable String userId) {
+        Booking booking=bookingService.getBookingByUserAndTour(userId,tourId);
+        if (booking == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new ApiResponse<>("error", null,"booking not found"));
+        }
+        return ResponseEntity.ok(new ApiResponse<>("success", booking));
+    }
+
     @PostMapping
     public ResponseEntity<ApiResponse<Booking>> createBooking(@RequestBody Booking booking) {
         Booking newBooking = bookingService.createBooking(booking);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(new ApiResponse<>("success", newBooking));
+    }
+
+    @PatchMapping("/{id}")
+    public ResponseEntity<ApiResponse<Booking>> updateBooking(@PathVariable String id, @RequestBody Map<String, Object> updates) {
+        Booking updated = bookingService.updateBooking(id, updates);
+        if(updated == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new ApiResponse<>("error", null,"booking not found"));
+        }
+        ApiResponse<Booking> res = new ApiResponse<>("success", updated);
+        return ResponseEntity.ok(res);
     }
 
     @DeleteMapping("/{id}")

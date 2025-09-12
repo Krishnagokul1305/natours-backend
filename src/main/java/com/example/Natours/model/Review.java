@@ -16,10 +16,11 @@ public class Review {
     private String review;
     private Double rating;
     private LocalDateTime createdAt = LocalDateTime.now();
+    private LocalDateTime updatedAt = LocalDateTime.now();
+    private String tour;
+    private String user;
 
-    @DBRef
-    private Tour tour;
-
-    @DBRef
-    private User user;
+    public void setUpdatedAt() {
+        this.updatedAt = LocalDateTime.now();
+    }
 }

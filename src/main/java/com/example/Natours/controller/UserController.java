@@ -7,8 +7,10 @@ import com.example.Natours.service.UserService;
 import com.example.Natours.utils.ApiResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -32,7 +34,17 @@ public class UserController {
         User user = userService.getUserById(id);
         if (user == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(new ApiResponse<>("error", null));
+                    .body(new ApiResponse<>("error", null,"User not found"));
+        }
+        return ResponseEntity.ok(new ApiResponse<>("success", user));
+    }
+
+    @GetMapping("/email/{email}")
+    public ResponseEntity<ApiResponse<User>> getUserByEmail(@PathVariable String email) {
+        User user=userService.getUserByEmail(email);
+        if (user==null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new ApiResponse<>("error", null,"email not found"));
         }
         return ResponseEntity.ok(new ApiResponse<>("success", user));
     }
@@ -43,14 +55,23 @@ public class UserController {
                 .body(new ApiResponse<>("success", userService.createUser(user)));
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<User>> updateUser(@PathVariable String id, @RequestBody User updatedUser) {
-        User user = userService.updateUser(id, updatedUser);
-        if (user == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(new ApiResponse<>("error", null));
+    @PatchMapping(path = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<ApiResponse<User>> updateUser(
+            @PathVariable String id,
+            @RequestParam(value = "name", required = false) String name,
+            @RequestParam(value = "active", required = false) Boolean active,
+            @RequestPart(value = "photo", required = false) MultipartFile photo) {
+        try {
+            User updated = userService.updateUser(id, name, active, photo);
+            if (updated == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(new ApiResponse<>("error", null, "User not found"));
+            }
+            return ResponseEntity.ok(new ApiResponse<>("success", updated));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new ApiResponse<>("error", null, e.getMessage()));
         }
-        return ResponseEntity.ok(new ApiResponse<>("success", user));
     }
 
     @DeleteMapping("/{id}")

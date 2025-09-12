@@ -6,7 +6,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.GetMapping;
 
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class ReviewService {
@@ -27,6 +29,27 @@ public class ReviewService {
 
     public List<Review> findByUser(String user){
         return reviewRepo.findByUser(user);
+    }
+
+    public Review updateReview(String id, Map<String, Object> updates) {
+        Review existing = reviewRepo.findById(id)
+                .orElse(null);
+
+        if(existing == null){
+            return null;
+        }
+
+        updates.forEach((key, value) -> {
+            switch (key) {
+                case "review" -> existing.setReview((String) value);
+                case "rating" -> existing.setRating(Double.valueOf(value.toString()));
+                case "tour" -> existing.setTour((String) value);
+                case "user" -> existing.setUser((String) value);
+            }
+        });
+
+        existing.setUpdatedAt();
+        return reviewRepo.save(existing);
     }
 
     public Review save(Review review){

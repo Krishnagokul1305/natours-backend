@@ -3,15 +3,27 @@ package com.example.Natours.service;
 import com.example.Natours.model.User;
 import com.example.Natours.repository.UserRepo;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 @Service
-public class UserService {
+public class UserService{
 
     @Autowired
     private UserRepo userRepo;
+
+    @Autowired
+    private S3Service s3Service;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     public List<User> getAllUsers() {
         return userRepo.findAll();
@@ -21,24 +33,31 @@ public class UserService {
         return userRepo.findById(id).orElse(null);
     }
 
+    public User getUserByEmail(String email) {
+        return userRepo.findUserByEmail(email).orElse(null);
+    }
+
     public User createUser(User user) {
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
         return userRepo.save(user);
     }
 
-    public User updateUser(String id, User updatedUser) {
-        User existingUser = userRepo.findById(id).orElse(null);
-        if (existingUser == null) return null;
+    public User updateUser(String id, String name, Boolean active, MultipartFile photo) throws IOException {
+        User user = userRepo.findById(id).orElse(null);
+        if (user == null) return null;
 
-        if (updatedUser.getName() != null) existingUser.setName(updatedUser.getName());
-        if (updatedUser.getEmail() != null) existingUser.setEmail(updatedUser.getEmail());
-        if (updatedUser.getPassword() != null) existingUser.setPassword(updatedUser.getPassword());
-        if (updatedUser.getPhoto() != null) existingUser.setPhoto(updatedUser.getPhoto());
-        if (updatedUser.getRole() != null) existingUser.setRole(updatedUser.getRole());
-        if (updatedUser.getActive() != null) existingUser.setActive(updatedUser.getActive());
-        if (updatedUser.getUpdatedAt() != null) existingUser.setUpdatedAt(updatedUser.getUpdatedAt());
+        if (name != null) user.setName(name);
+        if (active != null) user.setActive(active);
 
-        return userRepo.save(existingUser);
+        if (photo != null && !photo.isEmpty()) {
+            String photoUrl = s3Service.uploadFile(photo);
+            user.setPhoto(photoUrl);
+        }
+
+        user.setUpdatedAt();
+        return userRepo.save(user);
     }
+
 
     public boolean deleteUser(String id) {
         if (userRepo.existsById(id)) {

@@ -1,11 +1,14 @@
 package com.example.Natours.service;
 
 import com.example.Natours.model.Tour;
+import com.example.Natours.model.User;
 import com.example.Natours.repository.TourRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Service
@@ -25,35 +28,33 @@ public class TourService {
         return tourRepo.save(tour);
     }
 
-    public Tour updateTour(String id, Tour updatedTour) {
-        Optional<Tour> existingTourOpt = tourRepo.findById(id);
+    public Tour updateTour(String id, Map<String, Object> updates) {
+        Tour existingTour = tourRepo.findById(id)
+                .orElseThrow(() -> new RuntimeException("Tour not found"));
 
-        if (existingTourOpt.isPresent()) {
-            Tour existingTour = existingTourOpt.get();
+        updates.forEach((key, value) -> {
+            switch (key) {
+                case "name" -> existingTour.setName((String) value);
+                case "duration" -> existingTour.setDuration((Integer) value);
+                case "maxGroupSize" -> existingTour.setMaxGroupSize((Integer) value);
+                case "difficulty" -> existingTour.setDifficulty((String) value);
+                case "ratingsAverage" -> existingTour.setRatingsAverage(Double.valueOf(value.toString()));
+                case "ratingsQuantity" -> existingTour.setRatingsQuantity((Integer) value);
+                case "price" -> existingTour.setPrice(Double.valueOf(value.toString()));
+                case "priceDiscount" -> existingTour.setPriceDiscount(Double.valueOf(value.toString()));
+                case "summary" -> existingTour.setSummary((String) value);
+                case "description" -> existingTour.setDescription((String) value);
+                case "imageCover" -> existingTour.setImageCover((String) value);
+                case "images" -> existingTour.setImages((List<String>) value);
+                case "startDates" -> existingTour.setStartDates((List<LocalDateTime>) value);
+                case "slug" -> existingTour.setSlug((String) value);
+                case "startLocation" -> existingTour.setStartLocation((Tour.Location) value);
+                case "locations" -> existingTour.setLocations((List<Tour.Location>) value);
+                case "guides" -> existingTour.setGuides((List<String>) value);
+            }
+        });
 
-            // update fields (selectively or all)
-            existingTour.setName(updatedTour.getName());
-            existingTour.setDuration(updatedTour.getDuration());
-            existingTour.setMaxGroupSize(updatedTour.getMaxGroupSize());
-            existingTour.setDifficulty(updatedTour.getDifficulty());
-            existingTour.setRatingsAverage(updatedTour.getRatingsAverage());
-            existingTour.setRatingsQuantity(updatedTour.getRatingsQuantity());
-            existingTour.setPrice(updatedTour.getPrice());
-            existingTour.setPriceDiscount(updatedTour.getPriceDiscount());
-            existingTour.setSummary(updatedTour.getSummary());
-            existingTour.setDescription(updatedTour.getDescription());
-            existingTour.setImageCover(updatedTour.getImageCover());
-            existingTour.setImages(updatedTour.getImages());
-            existingTour.setStartDates(updatedTour.getStartDates());
-            existingTour.setSlug(updatedTour.getSlug());
-            existingTour.setStartLocation(updatedTour.getStartLocation());
-            existingTour.setLocations(updatedTour.getLocations());
-            existingTour.setGuides(updatedTour.getGuides());
-
-            return tourRepo.save(existingTour);
-        } else {
-            return null;
-        }
+        return tourRepo.save(existingTour);
     }
 
     public void  deleteTourById(String id){

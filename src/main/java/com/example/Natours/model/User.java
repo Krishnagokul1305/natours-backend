@@ -3,8 +3,10 @@ import lombok.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.security.core.GrantedAuthority;
 
 import java.time.LocalDateTime;
+import java.util.Collection;
 
 @Document(collection = "users")
 @Data
@@ -24,7 +26,7 @@ public class User {
 
     private String photo = "default.jpg";
 
-    private LocalDateTime updatedAt;
+    private LocalDateTime updatedAt=LocalDateTime.now();
 
     private Role role = Role.USER;
 
@@ -46,5 +48,9 @@ public class User {
     public boolean isUpdated(Long tokenIssuedAt) {
         return this.updatedAt != null &&
                 tokenIssuedAt < this.updatedAt.toEpochSecond(java.time.ZoneOffset.UTC);
+    }
+
+    public void setUpdatedAt() {
+        this.updatedAt = LocalDateTime.now();
     }
 }

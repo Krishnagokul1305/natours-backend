@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/tours")
@@ -39,12 +40,16 @@ public class TourController {
         return ResponseEntity.status(HttpStatus.CREATED).body(res);
     }
 
-    @PutMapping
-    public ResponseEntity<ApiResponse<Tour>> updateTour(@RequestBody Tour tour) {
-        Tour updated=new Tour();
-        ApiResponse<Tour>res=new ApiResponse<>("success",updated);
+    @PatchMapping("/{id}")
+    public ResponseEntity<ApiResponse<Tour>> updateTour(
+            @PathVariable String id,
+            @RequestBody Map<String, Object> updates) {
+
+        Tour updated = tourService.updateTour(id, updates);
+        ApiResponse<Tour> res = new ApiResponse<>("success", updated);
         return ResponseEntity.status(HttpStatus.OK).body(res);
     }
+
 
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteTourById(@PathVariable String id) {
