@@ -1,12 +1,12 @@
 package com.example.Natours.model;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
-import org.springframework.security.core.GrantedAuthority;
 
 import java.time.LocalDateTime;
-import java.util.Collection;
 
 @Document(collection = "users")
 @Data
@@ -17,9 +17,13 @@ public class User {
     @Id
     private String id;
 
+    @NotNull
+    @NotBlank(message = "Name is required")
     private String name;
 
     @Indexed(unique = true)
+    @NotNull
+    @NotBlank(message = "Email is required")
     private String email;
 
     private String password;
